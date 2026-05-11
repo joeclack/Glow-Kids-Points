@@ -23,9 +23,31 @@ const COLORS = [
 ];
 
 const EMOJIS = ['🦁','🐯','🦊','🐼','🦄','🐶','🐸','🐙','🦖','🐵','🦒','🐧','🐝','🦋','🐳','🦉'];
-
 const STORAGE_KEY = 'glow-kids-points-v1';
 
+// ── Icons ─────────────────────────────────────────────────────────────────────
+function Svg({ size = 16, children }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+         style={{ display: 'inline-block', verticalAlign: 'middle', flexShrink: 0 }}>
+      {children}
+    </svg>
+  );
+}
+const IconPencil  = ({ size }) => <Svg size={size}><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></Svg>;
+const IconX       = ({ size }) => <Svg size={size}><path d="M18 6 6 18M6 6l12 12"/></Svg>;
+const IconReset   = ({ size }) => <Svg size={size}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></Svg>;
+const IconTrash   = ({ size }) => <Svg size={size}><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></Svg>;
+const IconPlus    = ({ size }) => <Svg size={size}><path d="M5 12h14M12 5v14"/></Svg>;
+const IconMoon    = ({ size }) => <Svg size={size}><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></Svg>;
+const IconSun     = ({ size }) => <Svg size={size}><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></Svg>;
+const IconCrown   = ({ size }) => <Svg size={size}><path d="M2 20h20"/><path d="m4 16 4-12 4 8 4-8 4 12"/></Svg>;
+const IconTrophy  = ({ size }) => <Svg size={size}><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></Svg>;
+const IconSparkle = ({ size }) => <Svg size={size}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z"/></Svg>;
+const IconUndo    = ({ size }) => <Svg size={size}><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></Svg>;
+
+// ── Data helpers ──────────────────────────────────────────────────────────────
 function defaultTeams() {
   return [
     { id: 't1', name: 'Year 3', color: COLORS[0].c1, emoji: '🦁', score: 0 },
@@ -34,7 +56,6 @@ function defaultTeams() {
     { id: 't4', name: 'Year 6', color: COLORS[3].c1, emoji: '🦄', score: 0 },
   ];
 }
-
 function loadTeams() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -44,7 +65,6 @@ function loadTeams() {
   } catch (e) {}
   return defaultTeams();
 }
-
 function uid() { return 't' + Math.random().toString(36).slice(2, 8); }
 
 function burstConfetti(x, y, color) {
@@ -68,8 +88,7 @@ function burstConfetti(x, y, color) {
   }
 }
 
-// ── TeamCard ─────────────────────────────────────────────────────────────────
-// Read-only display + scoring buttons only. Editing lives in EditPanel.
+// ── TeamCard ──────────────────────────────────────────────────────────────────
 function TeamCard({ team, isLeader, isOnlyTeam, t, onChange, onEdit, isSelected }) {
   const cardRef = React.useRef(null);
   const scoreRef = React.useRef(null);
@@ -112,12 +131,15 @@ function TeamCard({ team, isLeader, isOnlyTeam, t, onChange, onEdit, isSelected 
         {team.emoji
           ? <span className="emoji">{team.emoji}</span>
           : <span style={{ width: 38, display: 'inline-block' }}></span>}
-        <div style={{ flex: 1, minWidth: 0, fontFamily: 'Fredoka', fontWeight: 700, fontSize: 24, lineHeight: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <div style={{ flex: 1, minWidth: 0, fontFamily: 'Fredoka', fontWeight: 700, fontSize: 24,
+                      lineHeight: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {team.name}
         </div>
-        {isLeader && t.showCrown && <span title="In the lead!" style={{ fontSize: 22 }}>👑</span>}
+        {isLeader && t.showCrown && <span title="In the lead!" style={{ fontSize: 20 }}>👑</span>}
         <button className="iconBtn" onClick={onEdit} title="Edit team"
-                style={{ fontSize: 15, opacity: isSelected ? 1 : 0.5 }}>✏️</button>
+                style={{ color: isSelected ? 'var(--c1)' : undefined }}>
+          <IconPencil size={15} />
+        </button>
       </div>
 
       {/* score */}
@@ -135,7 +157,8 @@ function TeamCard({ team, isLeader, isOnlyTeam, t, onChange, onEdit, isSelected 
       {/* stepper */}
       <div className="stepper" style={{ position: 'relative', zIndex: 2 }}>
         <button className="stepBtn minus btn-tactile" onClick={() => bump(-sS)}>−{sS}</button>
-        <div style={{ textAlign: 'center', fontFamily: 'Fredoka', fontWeight: 600, fontSize: 13, opacity: .5, letterSpacing: '.14em', textTransform: 'uppercase' }}>
+        <div style={{ textAlign: 'center', fontFamily: 'Fredoka', fontWeight: 600, fontSize: 13,
+                      opacity: .5, letterSpacing: '.14em', textTransform: 'uppercase' }}>
           One at a time
         </div>
         <button className="stepBtn btn-tactile" onClick={() => bump(sS)}>+{sS}</button>
@@ -156,8 +179,6 @@ function TeamCard({ team, isLeader, isOnlyTeam, t, onChange, onEdit, isSelected 
 }
 
 // ── EditPanel ─────────────────────────────────────────────────────────────────
-const LABEL = { fontSize: 11, fontWeight: 700, color: '#888', letterSpacing: '.1em', textTransform: 'uppercase', display: 'block', marginBottom: 6 };
-
 function EditPanel({ team, onClose, onChange, onRemove, isOnlyTeam }) {
   const update = (patch) => onChange({ ...team, ...patch });
   const setScore = (n) => update({ score: Math.max(0, Math.min(9999, Math.round(n || 0))) });
@@ -165,38 +186,40 @@ function EditPanel({ team, onClose, onChange, onRemove, isOnlyTeam }) {
   return (
     <div className="edit-panel" style={{ borderTop: `4px solid ${team.color}` }}>
       {/* header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-        <span style={{ fontFamily: 'Fredoka', fontWeight: 700, fontSize: 18, color: team.color }}>Edit Team</span>
-        <button className="iconBtn" onClick={onClose} style={{ fontSize: 16 }}>✕</button>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span style={{ fontFamily: 'Fredoka', fontWeight: 700, fontSize: 18, color: team.color }}>
+          Edit Team
+        </span>
+        <button className="iconBtn" onClick={onClose}><IconX size={16} /></button>
       </div>
 
       {/* name */}
-      <div style={{ marginBottom: 18 }}>
-        <label style={LABEL}>Name</label>
-        <input value={team.name} onChange={e => update({ name: e.target.value })}
-               style={{ width: '100%', fontFamily: 'Fredoka', fontWeight: 700, fontSize: 20,
-                        border: '1.5px solid #e5e7eb', borderRadius: 10, padding: '8px 12px',
-                        outline: 'none', color: team.color, background: 'transparent', boxSizing: 'border-box' }} />
+      <div>
+        <label className="edit-section-label">Name</label>
+        <input className="edit-input"
+               value={team.name} onChange={e => update({ name: e.target.value })}
+               style={{ fontFamily: 'Fredoka', fontWeight: 700, fontSize: 20, color: team.color }} />
       </div>
 
       {/* score */}
-      <div style={{ marginBottom: 18 }}>
-        <label style={LABEL}>Score</label>
-        <input type="number" value={team.score} onChange={e => setScore(Number(e.target.value))}
-               style={{ width: '100%', fontFamily: 'Fredoka', fontWeight: 700, fontSize: 28,
-                        border: '1.5px solid #e5e7eb', borderRadius: 10, padding: '8px 12px',
-                        outline: 'none', color: team.color, background: 'transparent',
-                        boxSizing: 'border-box', MozAppearance: 'textfield' }} />
+      <div>
+        <label className="edit-section-label">Score</label>
+        <input type="number" className="edit-input num-input"
+               value={team.score} onChange={e => setScore(Number(e.target.value))}
+               style={{ fontFamily: 'Fredoka', fontWeight: 700, fontSize: 28, color: team.color }} />
       </div>
 
       {/* emoji */}
-      <div style={{ marginBottom: 18 }}>
-        <label style={LABEL}>Emoji</label>
+      <div>
+        <label className="edit-section-label">Emoji</label>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 38px)', gap: 4 }}>
           <button onClick={() => update({ emoji: '' })} title="No emoji"
-                  style={{ border: '1.5px dashed rgba(0,0,0,.2)', background: !team.emoji ? 'rgba(0,0,0,.06)' : 'transparent',
-                           fontSize: 13, color: 'rgba(0,0,0,.4)', borderRadius: 8, cursor: 'pointer', width: 38, height: 38 }}>
-            ✕
+                  style={{ border: '1.5px dashed rgba(0,0,0,.2)',
+                           background: !team.emoji ? 'rgba(0,0,0,.06)' : 'transparent',
+                           borderRadius: 8, cursor: 'pointer', width: 38, height: 38,
+                           display: 'flex', alignItems: 'center', justifyContent: 'center',
+                           color: 'rgba(0,0,0,.35)' }}>
+            <IconX size={14} />
           </button>
           {EMOJIS.map(e => (
             <button key={e} onClick={() => update({ emoji: e })}
@@ -210,23 +233,28 @@ function EditPanel({ team, onClose, onChange, onRemove, isOnlyTeam }) {
       </div>
 
       {/* color */}
-      <div style={{ marginBottom: 24 }}>
-        <label style={LABEL}>Color</label>
+      <div>
+        <label className="edit-section-label">Color</label>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           {COLORS.map(c => (
             <button key={c.c1} onClick={() => update({ color: c.c1 })} title={c.name}
                     style={{ width: 30, height: 30, borderRadius: '50%', background: c.c1,
                              border: team.color === c.c1 ? '3px solid #1a1a2e' : '3px solid transparent',
-                             cursor: 'pointer', padding: 0, outline: 'none', boxShadow: team.color === c.c1 ? '0 0 0 2px #fff inset' : 'none' }} />
+                             cursor: 'pointer', padding: 0, outline: 'none',
+                             boxShadow: team.color === c.c1 ? '0 0 0 2px #fff inset' : 'none' }} />
           ))}
         </div>
       </div>
 
       {/* actions */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, borderTop: '1px solid #f3f4f6', paddingTop: 16 }}>
-        <button className="iconBtn" onClick={() => update({ score: 0 })} style={{ textAlign: 'left', padding: '8px 10px' }}>↺ Reset score to 0</button>
+      <div style={{ borderTop: '1px solid #f3f4f6', paddingTop: 16, display: 'flex', flexDirection: 'column', gap: 2, marginTop: 'auto' }}>
+        <button className="edit-action-btn" onClick={() => update({ score: 0 })}>
+          <IconReset size={15} /> Reset score to 0
+        </button>
         {!isOnlyTeam && (
-          <button className="iconBtn" onClick={onRemove} style={{ color: '#e11d48', textAlign: 'left', padding: '8px 10px' }}>✕ Remove team</button>
+          <button className="edit-action-btn danger" onClick={onRemove}>
+            <IconTrash size={15} /> Remove team
+          </button>
         )}
       </div>
     </div>
@@ -243,13 +271,15 @@ function Menu({ t, setTweak, onAddTeam, onResetAll, onRestoreDefaults }) {
     window.addEventListener('mousedown', handler);
     return () => window.removeEventListener('mousedown', handler);
   }, [open]);
-  const item = (label, onClick, opts = {}) => (
+
+  const item = (label, icon, onClick, opts = {}) => (
     <button className="menu-item" onClick={() => { onClick(); if (!opts.keepOpen) setOpen(false); }}>
-      <span className="menu-icon">{opts.icon}</span>
+      <span className="menu-icon">{icon}</span>
       <span>{label}</span>
-      {opts.right && <span className="menu-right">{opts.right}</span>}
+      {opts.check && <span className="menu-right">✓</span>}
     </button>
   );
+
   return (
     <div className="menu-wrap" ref={ref}>
       <button className={'pill primary btn-tactile menu-btn' + (open ? ' open' : '')}
@@ -259,15 +289,17 @@ function Menu({ t, setTweak, onAddTeam, onResetAll, onRestoreDefaults }) {
       </button>
       {open && (
         <div className="menu-pop" role="menu">
-          {item('Add a team', onAddTeam, { icon: '➕' })}
-          {item('Reset all scores', onResetAll, { icon: '↺' })}
+          {item('Add a team',          <IconPlus size={16} />,    onAddTeam)}
+          {item('Reset all scores',    <IconReset size={16} />,   onResetAll)}
           <div className="menu-sep"></div>
-          {item(t.dark ? 'Light mode' : 'Dark mode', () => setTweak('dark', !t.dark), { icon: t.dark ? '☀️' : '🌙', keepOpen: true })}
-          {item('Crown on leader', () => setTweak('showCrown', !t.showCrown), { icon: '👑', keepOpen: true, right: t.showCrown ? '✓' : '' })}
-          {item('Leaderboard', () => setTweak('showLeaderboard', !t.showLeaderboard), { icon: '🏆', keepOpen: true, right: t.showLeaderboard ? '✓' : '' })}
-          {item('Confetti on +points', () => setTweak('celebrate', !t.celebrate), { icon: '🎉', keepOpen: true, right: t.celebrate ? '✓' : '' })}
+          {item(t.dark ? 'Light mode' : 'Dark mode',
+                t.dark ? <IconSun size={16} /> : <IconMoon size={16} />,
+                () => setTweak('dark', !t.dark), { keepOpen: true })}
+          {item('Crown on leader',     <IconCrown size={16} />,   () => setTweak('showCrown', !t.showCrown),         { keepOpen: true, check: t.showCrown })}
+          {item('Leaderboard',         <IconTrophy size={16} />,  () => setTweak('showLeaderboard', !t.showLeaderboard), { keepOpen: true, check: t.showLeaderboard })}
+          {item('Confetti on +points', <IconSparkle size={16} />, () => setTweak('celebrate', !t.celebrate),         { keepOpen: true, check: t.celebrate })}
           <div className="menu-sep"></div>
-          {item('Restore default 4 teams', onRestoreDefaults, { icon: '↩︎' })}
+          {item('Restore default teams', <IconUndo size={16} />,  onRestoreDefaults)}
         </div>
       )}
     </div>
@@ -304,9 +336,10 @@ function App() {
 
   const max = teams.reduce((m, x) => Math.max(m, x.score), -Infinity);
   const sorted = [...teams].sort((a, b) => b.score - a.score);
+  const panelOpen = selectedIdx !== null && selectedIdx < teams.length;
 
   return (
-    <div className="wrap">
+    <div className={'wrap' + (panelOpen ? ' panel-open' : '')}>
       <div id="confetti-layer" className="top-celebration"></div>
 
       <header className="top-bar">
@@ -319,35 +352,33 @@ function App() {
       </header>
 
       <div className="grid-center">
-        <div style={{ display: 'flex', gap: 20, width: '100%', alignItems: 'flex-start' }}>
-          <div className="grid" style={{ flex: 1 }}>
-            {teams.map((team, i) => (
-              <TeamCard key={team.id}
-                        team={team}
-                        isLeader={teams.length > 1 && team.score === max && max > 0}
-                        isOnlyTeam={teams.length <= 1}
-                        isSelected={selectedIdx === i}
-                        t={t}
-                        onChange={next => updateTeam(i, next)}
-                        onEdit={() => setSelectedIdx(selectedIdx === i ? null : i)} />
-            ))}
-          </div>
-
-          {selectedIdx !== null && selectedIdx < teams.length && (
-            <EditPanel
-              team={teams[selectedIdx]}
-              onClose={() => setSelectedIdx(null)}
-              onChange={next => updateTeam(selectedIdx, next)}
-              onRemove={() => removeTeam(selectedIdx)}
-              isOnlyTeam={teams.length <= 1} />
-          )}
+        <div className="grid" style={{ width: '100%' }}>
+          {teams.map((team, i) => (
+            <TeamCard key={team.id}
+                      team={team}
+                      isLeader={teams.length > 1 && team.score === max && max > 0}
+                      isOnlyTeam={teams.length <= 1}
+                      isSelected={selectedIdx === i}
+                      t={t}
+                      onChange={next => updateTeam(i, next)}
+                      onEdit={() => setSelectedIdx(selectedIdx === i ? null : i)} />
+          ))}
         </div>
       </div>
+
+      {panelOpen && (
+        <EditPanel
+          team={teams[selectedIdx]}
+          onClose={() => setSelectedIdx(null)}
+          onChange={next => updateTeam(selectedIdx, next)}
+          onRemove={() => removeTeam(selectedIdx)}
+          isOnlyTeam={teams.length <= 1} />
+      )}
 
       {/* leaderboard */}
       {t.showLeaderboard && teams.length > 1 && max > 0 && (
         <div className="leaderboard">
-          <span>🏆</span>
+          <IconTrophy size={14} />
           {sorted.slice(0, 3).map((tm, i) => (
             <React.Fragment key={tm.id}>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
@@ -355,7 +386,7 @@ function App() {
                 <span className="lb-name">{tm.name}</span>
                 <span style={{ opacity: .7 }}>{tm.score}</span>
               </span>
-              {i < Math.min(2, sorted.length - 1) && <span style={{ opacity: .4 }}>•</span>}
+              {i < Math.min(2, sorted.length - 1) && <span style={{ opacity: .3 }}>|</span>}
             </React.Fragment>
           ))}
         </div>
@@ -364,7 +395,7 @@ function App() {
       {confirmReset && (
         <div className="modal-back" onClick={() => setConfirmReset(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
-            <div style={{ fontSize: 48 }}>🎯</div>
+            <div style={{ fontSize: 40, marginBottom: 8 }}>🎯</div>
             <h2>Reset every team to 0?</h2>
             <p>This sets every score back to zero. The teams stay.</p>
             <div className="actions">
@@ -377,21 +408,21 @@ function App() {
 
       <TweaksPanel title="Tweaks">
         <TweakSection label="Look">
-          <TweakToggle label="Dark mode" value={t.dark} onChange={v => setTweak('dark', v)} />
-          <TweakToggle label="Crown on leader" value={t.showCrown} onChange={v => setTweak('showCrown', v)} />
-          <TweakToggle label="Top-3 leaderboard" value={t.showLeaderboard} onChange={v => setTweak('showLeaderboard', v)} />
-          <TweakToggle label="Confetti on +points" value={t.celebrate} onChange={v => setTweak('celebrate', v)} />
-          <TweakRadio label="Big buttons" value={t.bigButtons} options={['small','big']} onChange={v => setTweak('bigButtons', v)} />
+          <TweakToggle label="Dark mode"          value={t.dark}            onChange={v => setTweak('dark', v)} />
+          <TweakToggle label="Crown on leader"    value={t.showCrown}       onChange={v => setTweak('showCrown', v)} />
+          <TweakToggle label="Top-3 leaderboard"  value={t.showLeaderboard} onChange={v => setTweak('showLeaderboard', v)} />
+          <TweakToggle label="Confetti on +points" value={t.celebrate}      onChange={v => setTweak('celebrate', v)} />
+          <TweakRadio  label="Big buttons"        value={t.bigButtons}      options={['small','big']} onChange={v => setTweak('bigButtons', v)} />
         </TweakSection>
         <TweakSection label="Scoring">
-          <TweakNumber label="Slider max" value={t.maxScale} min={10} max={500} step={10} onChange={v => setTweak('maxScale', v)} />
-          <TweakNumber label="Main step (±)" value={t.stepBig} min={1} max={50} step={1} onChange={v => setTweak('stepBig', v)} />
-          <TweakNumber label="Fine step (±)" value={t.stepSmall} min={1} max={10} step={1} onChange={v => setTweak('stepSmall', v)} />
+          <TweakNumber label="Slider max"   value={t.maxScale}  min={10} max={500} step={10} onChange={v => setTweak('maxScale', v)} />
+          <TweakNumber label="Main step (±)" value={t.stepBig}  min={1}  max={50}  step={1}  onChange={v => setTweak('stepBig', v)} />
+          <TweakNumber label="Fine step (±)" value={t.stepSmall} min={1} max={10}  step={1}  onChange={v => setTweak('stepSmall', v)} />
         </TweakSection>
         <TweakSection label="Teams">
-          <TweakButton label="+ Add team" onClick={addTeam} />
-          <TweakButton label="Reset scores to 0" secondary onClick={() => setConfirmReset(true)} />
-          <TweakButton label="Restore default 4 teams" secondary onClick={() => setTeams(defaultTeams())} />
+          <TweakButton label="+ Add team"           onClick={addTeam} />
+          <TweakButton label="Reset scores to 0"    secondary onClick={() => setConfirmReset(true)} />
+          <TweakButton label="Restore default teams" secondary onClick={() => setTeams(defaultTeams())} />
         </TweakSection>
       </TweaksPanel>
     </div>
