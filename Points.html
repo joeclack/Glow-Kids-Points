@@ -140,12 +140,12 @@
   .lb-dot{width:10px;height:10px;border-radius:50%;background:var(--c1)}
   .lb-name{margin-right:6px}
 
-  /* color picker for team */
-  .color-pop{position:absolute;top:48px;right:14px;display:none;gap:6px;padding:8px;border-radius:14px;background:#fff;box-shadow:0 10px 30px rgba(0,0,0,.2);z-index:5}
-  body.dark .color-pop{background:#2a1d59}
-  .color-pop.open{display:flex}
-  .color-pop button{width:24px;height:24px;border-radius:50%;border:2px solid #fff;cursor:pointer;padding:0}
-  body.dark .color-pop button{border-color:#1e1640}
+  /* edit panel */
+  .edit-panel{width:260px;flex-shrink:0;background:#fff;border-radius:16px;
+    box-shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
+    padding:20px;position:sticky;top:24px;max-height:calc(100vh - 48px);overflow-y:auto}
+  body.dark .edit-panel{background:#1f2937}
+  .card-selected{outline:2px solid var(--c1);outline-offset:2px}
 
   /* fireworks bar */
   .top-celebration{position:fixed;inset:0;pointer-events:none;z-index:100;overflow:hidden}

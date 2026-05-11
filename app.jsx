@@ -59,10 +59,8 @@ function burstConfetti(x, y, color) {
     d.style.background = colors[i % colors.length];
     const angle = Math.random() * Math.PI * 2;
     const dist = 60 + Math.random() * 140;
-    const tx = Math.cos(angle) * dist + 'px';
-    const ty = Math.sin(angle) * dist - 30 + 'px';
-    d.style.setProperty('--tx', tx);
-    d.style.setProperty('--ty', ty);
+    d.style.setProperty('--tx', Math.cos(angle) * dist + 'px');
+    d.style.setProperty('--ty', Math.sin(angle) * dist - 30 + 'px');
     d.style.setProperty('--tr', (Math.random() * 720 - 360) + 'deg');
     d.style.animation = 'burst .9s cubic-bezier(.1,.6,.4,1) forwards';
     layer.appendChild(d);
@@ -70,21 +68,18 @@ function burstConfetti(x, y, color) {
   }
 }
 
-function TeamCard({ team, isLeader, isOnlyTeam, t, onChange, onRemove }) {
+// ── TeamCard ─────────────────────────────────────────────────────────────────
+// Read-only display + scoring buttons only. Editing lives in EditPanel.
+function TeamCard({ team, isLeader, isOnlyTeam, t, onChange, onEdit, isSelected }) {
   const cardRef = React.useRef(null);
   const scoreRef = React.useRef(null);
   const prevScore = React.useRef(team.score);
-  const [editingName, setEditingName] = React.useState(false);
-  const [editingScore, setEditingScore] = React.useState(false);
-  const [pickColor, setPickColor] = React.useState(false);
-  const [pickEmoji, setPickEmoji] = React.useState(false);
-  const [tempScore, setTempScore] = React.useState(String(team.score));
 
   React.useEffect(() => {
     if (team.score !== prevScore.current) {
       const el = scoreRef.current;
       if (el) {
-        el.classList.remove('pop','shake');
+        el.classList.remove('pop', 'shake');
         void el.offsetWidth;
         el.classList.add(team.score > prevScore.current ? 'pop' : 'shake');
       }
@@ -96,109 +91,51 @@ function TeamCard({ team, isLeader, isOnlyTeam, t, onChange, onRemove }) {
     }
   }, [team.score, t.celebrate, team.color]);
 
-  const update = (patch) => onChange({ ...team, ...patch });
-  const setScore = (n) => {
-    const clamped = Math.max(0, Math.min(9999, Math.round(n)));
-    update({ score: clamped });
-  };
+  const setScore = (n) => onChange({ ...team, score: Math.max(0, Math.min(9999, Math.round(n))) });
   const bump = (n) => setScore(team.score + n);
 
   const sliderMax = t.maxScale;
-  const sliderMin = 0;
-  const sliderVal = Math.max(sliderMin, Math.min(sliderMax, team.score));
-  const pct = ((sliderVal - sliderMin) / (sliderMax - sliderMin)) * 100;
-
+  const sliderVal = Math.max(0, Math.min(sliderMax, team.score));
+  const pct = (sliderVal / sliderMax) * 100;
   const sB = t.stepBig;
   const sS = t.stepSmall;
   const big = t.bigButtons === 'big';
 
   return (
-    <div ref={cardRef} className={'card' + (isLeader && t.showCrown ? ' leader-glow' : '')}
-         style={{ '--c1': team.color }} data-screen-label={`Team ${team.name}`}>
+    <div ref={cardRef}
+         className={'card' + (isLeader && t.showCrown ? ' leader-glow' : '') + (isSelected ? ' card-selected' : '')}
+         style={{ '--c1': team.color }}>
       <div className="accent"></div>
 
-      {/* header row */}
-      <div className="row" style={{ position: 'relative', zIndex: 10, gap: 10 }}>
-        <button className="btn-tactile" onClick={() => { setPickEmoji((v) => !v); setPickColor(false); }}
-                style={{ border: team.emoji ? 'none' : '1.5px dashed rgba(0,0,0,.2)', background: 'transparent', padding: 4, borderRadius: 12, cursor: 'pointer', width: 46, height: 46, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          {team.emoji
-            ? <span className="emoji">{team.emoji}</span>
-            : <span style={{ fontSize: 12, color: 'rgba(0,0,0,.3)', fontWeight: 700 }}>+</span>}
-        </button>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          {editingName ? (
-            <input autoFocus className="team-name" value={team.name}
-              onChange={(e) => update({ name: e.target.value })}
-              onBlur={() => setEditingName(false)}
-              onKeyDown={(e) => e.key === 'Enter' && setEditingName(false)} />
-          ) : (
-            <div className="team-name" onClick={() => setEditingName(true)}
-                 style={{ cursor: 'text' }}>{team.name}</div>
-          )}
+      {/* header */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, position: 'relative', zIndex: 2 }}>
+        {team.emoji
+          ? <span className="emoji">{team.emoji}</span>
+          : <span style={{ width: 38, display: 'inline-block' }}></span>}
+        <div style={{ flex: 1, minWidth: 0, fontFamily: 'Fredoka', fontWeight: 700, fontSize: 24, lineHeight: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {team.name}
         </div>
-        {isLeader && t.showCrown && (
-          <div title="In the lead!" style={{ fontSize: 24 }}>👑</div>
-        )}
-        <button className="iconBtn" title="Change color" onClick={() => { setPickColor((v) => !v); setPickEmoji(false); }}>
-          <span style={{ display: 'inline-block', width: 16, height: 16, borderRadius: 8, background: team.color, verticalAlign: 'middle', boxShadow: '0 0 0 2px rgba(0,0,0,.1)' }}></span>
-        </button>
-        <div className={'color-pop' + (pickColor ? ' open' : '')}>
-          {COLORS.map((c) => (
-            <button key={c.c1} style={{ background: c.c1 }} title={c.name}
-                    onClick={() => { update({ color: c.c1 }); setPickColor(false); }} />
-          ))}
-        </div>
+        {isLeader && t.showCrown && <span title="In the lead!" style={{ fontSize: 22 }}>👑</span>}
+        <button className="iconBtn" onClick={onEdit} title="Edit team"
+                style={{ fontSize: 15, opacity: isSelected ? 1 : 0.5 }}>✏️</button>
       </div>
-
-      {/* emoji picker */}
-      {pickEmoji && (
-        <div style={{ position: 'absolute', top: 52, left: 14, zIndex: 20, padding: 8, borderRadius: 14,
-                      background: '#fff', boxShadow: '0 6px 18px rgba(0,0,0,.15)',
-                      display: 'grid', gridTemplateColumns: 'repeat(8, 36px)', gap: 2, width: 'max-content' }}>
-          <button onClick={() => { update({ emoji: '' }); setPickEmoji(false); }}
-            title="No emoji"
-            style={{ border: '1.5px dashed rgba(0,0,0,.2)', background: 'transparent', fontSize: 14, color: 'rgba(0,0,0,.35)', borderRadius: 8, cursor: 'pointer', width: 36, height: 36 }}>
-            ✕
-          </button>
-          {EMOJIS.map((e) => (
-            <button key={e} onClick={() => { update({ emoji: e }); setPickEmoji(false); }}
-              style={{ border: 'none', background: 'transparent', fontSize: 22, padding: 4, borderRadius: 8, cursor: 'pointer', width: 36, height: 36 }}>
-              {e}
-            </button>
-          ))}
-        </div>
-      )}
 
       {/* score */}
-      <div style={{ position: 'relative', zIndex: 2, marginTop: 6, textAlign: 'center' }}>
-        {editingScore ? (
-          <input autoFocus className="num-input score-big" type="number" value={tempScore}
-                 style={{ color: team.color }}
-                 onChange={(e) => setTempScore(e.target.value)}
-                 onBlur={() => { setScore(Number(tempScore || 0)); setEditingScore(false); }}
-                 onKeyDown={(e) => {
-                   if (e.key === 'Enter') { setScore(Number(tempScore || 0)); setEditingScore(false); }
-                   if (e.key === 'Escape') { setTempScore(String(team.score)); setEditingScore(false); }
-                 }} />
-        ) : (
-          <div ref={scoreRef} className="score-big" onClick={() => { setTempScore(String(team.score)); setEditingScore(true); }}
-               style={{ cursor: 'text' }} title="Tap to type">
-            {team.score}
-          </div>
-        )}
+      <div ref={scoreRef} className="score-big" style={{ marginTop: 6, position: 'relative', zIndex: 2 }}>
+        {team.score}
       </div>
 
-      {/* big +/- buttons */}
+      {/* +/- buttons */}
       <div className="delta-row" style={{ position: 'relative', zIndex: 2 }}>
         <button className={'deltaBtn minus btn-tactile' + (big ? ' big' : '')} onClick={() => bump(-sB)}>−{sB}</button>
         <button className={'deltaBtn plus btn-tactile' + (big ? ' big' : '')} onClick={() => bump(sB)}>+{sB}</button>
-        <button className={'deltaBtn plus btn-tactile' + (big ? ' big' : '')} onClick={() => bump(sB * 5)} title={`+${sB*5} bonus!`}>+{sB*5}🎉</button>
+        <button className={'deltaBtn plus btn-tactile' + (big ? ' big' : '')} onClick={() => bump(sB * 5)}>+{sB * 5}🎉</button>
       </div>
 
-      {/* fine stepper */}
+      {/* stepper */}
       <div className="stepper" style={{ position: 'relative', zIndex: 2 }}>
         <button className="stepBtn minus btn-tactile" onClick={() => bump(-sS)}>−{sS}</button>
-        <div style={{ textAlign: 'center', fontFamily: 'Fredoka', fontWeight: 600, fontSize: 13, opacity: .55, letterSpacing: '.16em', textTransform: 'uppercase' }}>
+        <div style={{ textAlign: 'center', fontFamily: 'Fredoka', fontWeight: 600, fontSize: 13, opacity: .5, letterSpacing: '.14em', textTransform: 'uppercase' }}>
           One at a time
         </div>
         <button className="stepBtn btn-tactile" onClick={() => bump(sS)}>+{sS}</button>
@@ -206,26 +143,97 @@ function TeamCard({ team, isLeader, isOnlyTeam, t, onChange, onRemove }) {
 
       {/* slider */}
       <div className="slider-wrap" style={{ position: 'relative', zIndex: 2 }}>
-        <input type="range" className="pts-slider" min={sliderMin} max={sliderMax} step={1}
+        <input type="range" className="pts-slider" min={0} max={sliderMax} step={1}
                value={sliderVal}
                style={{ '--c1': team.color, '--p': pct + '%' }}
                onChange={(e) => setScore(Number(e.target.value))} />
         <div className="slider-labels">
-          <span>{sliderMin}</span><span>{Math.round(sliderMax/2)}</span><span>{sliderMax}</span>
+          <span>0</span><span>{Math.round(sliderMax / 2)}</span><span>{sliderMax}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── EditPanel ─────────────────────────────────────────────────────────────────
+const LABEL = { fontSize: 11, fontWeight: 700, color: '#888', letterSpacing: '.1em', textTransform: 'uppercase', display: 'block', marginBottom: 6 };
+
+function EditPanel({ team, onClose, onChange, onRemove, isOnlyTeam }) {
+  const update = (patch) => onChange({ ...team, ...patch });
+  const setScore = (n) => update({ score: Math.max(0, Math.min(9999, Math.round(n || 0))) });
+
+  return (
+    <div className="edit-panel" style={{ borderTop: `4px solid ${team.color}` }}>
+      {/* header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+        <span style={{ fontFamily: 'Fredoka', fontWeight: 700, fontSize: 18, color: team.color }}>Edit Team</span>
+        <button className="iconBtn" onClick={onClose} style={{ fontSize: 16 }}>✕</button>
+      </div>
+
+      {/* name */}
+      <div style={{ marginBottom: 18 }}>
+        <label style={LABEL}>Name</label>
+        <input value={team.name} onChange={e => update({ name: e.target.value })}
+               style={{ width: '100%', fontFamily: 'Fredoka', fontWeight: 700, fontSize: 20,
+                        border: '1.5px solid #e5e7eb', borderRadius: 10, padding: '8px 12px',
+                        outline: 'none', color: team.color, background: 'transparent', boxSizing: 'border-box' }} />
+      </div>
+
+      {/* score */}
+      <div style={{ marginBottom: 18 }}>
+        <label style={LABEL}>Score</label>
+        <input type="number" value={team.score} onChange={e => setScore(Number(e.target.value))}
+               style={{ width: '100%', fontFamily: 'Fredoka', fontWeight: 700, fontSize: 28,
+                        border: '1.5px solid #e5e7eb', borderRadius: 10, padding: '8px 12px',
+                        outline: 'none', color: team.color, background: 'transparent',
+                        boxSizing: 'border-box', MozAppearance: 'textfield' }} />
+      </div>
+
+      {/* emoji */}
+      <div style={{ marginBottom: 18 }}>
+        <label style={LABEL}>Emoji</label>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 38px)', gap: 4 }}>
+          <button onClick={() => update({ emoji: '' })} title="No emoji"
+                  style={{ border: '1.5px dashed rgba(0,0,0,.2)', background: !team.emoji ? 'rgba(0,0,0,.06)' : 'transparent',
+                           fontSize: 13, color: 'rgba(0,0,0,.4)', borderRadius: 8, cursor: 'pointer', width: 38, height: 38 }}>
+            ✕
+          </button>
+          {EMOJIS.map(e => (
+            <button key={e} onClick={() => update({ emoji: e })}
+                    style={{ border: team.emoji === e ? `2px solid ${team.color}` : '2px solid transparent',
+                             background: team.emoji === e ? `${team.color}18` : 'transparent',
+                             fontSize: 20, borderRadius: 8, cursor: 'pointer', width: 38, height: 38 }}>
+              {e}
+            </button>
+          ))}
         </div>
       </div>
 
-      <div className="card-foot" style={{ position: 'relative', zIndex: 2 }}>
-        <button className="iconBtn" onClick={() => setScore(0)} title="Reset to 0">↺ RESET</button>
+      {/* color */}
+      <div style={{ marginBottom: 24 }}>
+        <label style={LABEL}>Color</label>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          {COLORS.map(c => (
+            <button key={c.c1} onClick={() => update({ color: c.c1 })} title={c.name}
+                    style={{ width: 30, height: 30, borderRadius: '50%', background: c.c1,
+                             border: team.color === c.c1 ? '3px solid #1a1a2e' : '3px solid transparent',
+                             cursor: 'pointer', padding: 0, outline: 'none', boxShadow: team.color === c.c1 ? '0 0 0 2px #fff inset' : 'none' }} />
+          ))}
+        </div>
+      </div>
+
+      {/* actions */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, borderTop: '1px solid #f3f4f6', paddingTop: 16 }}>
+        <button className="iconBtn" onClick={() => update({ score: 0 })} style={{ textAlign: 'left', padding: '8px 10px' }}>↺ Reset score to 0</button>
         {!isOnlyTeam && (
-          <button className="iconBtn" onClick={onRemove} title="Remove team"
-                  style={{ color: '#c81d57' }}>✕ REMOVE</button>
+          <button className="iconBtn" onClick={onRemove} style={{ color: '#e11d48', textAlign: 'left', padding: '8px 10px' }}>✕ Remove team</button>
         )}
       </div>
     </div>
   );
 }
 
+// ── Menu ──────────────────────────────────────────────────────────────────────
 function Menu({ t, setTweak, onAddTeam, onResetAll, onRestoreDefaults }) {
   const [open, setOpen] = React.useState(false);
   const ref = React.useRef(null);
@@ -237,7 +245,7 @@ function Menu({ t, setTweak, onAddTeam, onResetAll, onRestoreDefaults }) {
   }, [open]);
   const item = (label, onClick, opts = {}) => (
     <button className="menu-item" onClick={() => { onClick(); if (!opts.keepOpen) setOpen(false); }}>
-      <span className="menu-icon" aria-hidden="true">{opts.icon}</span>
+      <span className="menu-icon">{opts.icon}</span>
       <span>{label}</span>
       {opts.right && <span className="menu-right">{opts.right}</span>}
     </button>
@@ -245,7 +253,7 @@ function Menu({ t, setTweak, onAddTeam, onResetAll, onRestoreDefaults }) {
   return (
     <div className="menu-wrap" ref={ref}>
       <button className={'pill primary btn-tactile menu-btn' + (open ? ' open' : '')}
-              onClick={() => setOpen((v) => !v)} aria-label="Menu">
+              onClick={() => setOpen(v => !v)} aria-label="Menu">
         <span className="menu-bars"><i></i><i></i><i></i></span>
         Menu
       </button>
@@ -254,18 +262,10 @@ function Menu({ t, setTweak, onAddTeam, onResetAll, onRestoreDefaults }) {
           {item('Add a team', onAddTeam, { icon: '➕' })}
           {item('Reset all scores', onResetAll, { icon: '↺' })}
           <div className="menu-sep"></div>
-          {item(t.dark ? 'Light mode' : 'Dark mode',
-                () => setTweak('dark', !t.dark),
-                { icon: t.dark ? '☀️' : '🌙', keepOpen: true })}
-          {item('Crown on leader',
-                () => setTweak('showCrown', !t.showCrown),
-                { icon: '👑', keepOpen: true, right: t.showCrown ? '✓' : '' })}
-          {item('Leaderboard',
-                () => setTweak('showLeaderboard', !t.showLeaderboard),
-                { icon: '🏆', keepOpen: true, right: t.showLeaderboard ? '✓' : '' })}
-          {item('Confetti on +points',
-                () => setTweak('celebrate', !t.celebrate),
-                { icon: '🎉', keepOpen: true, right: t.celebrate ? '✓' : '' })}
+          {item(t.dark ? 'Light mode' : 'Dark mode', () => setTweak('dark', !t.dark), { icon: t.dark ? '☀️' : '🌙', keepOpen: true })}
+          {item('Crown on leader', () => setTweak('showCrown', !t.showCrown), { icon: '👑', keepOpen: true, right: t.showCrown ? '✓' : '' })}
+          {item('Leaderboard', () => setTweak('showLeaderboard', !t.showLeaderboard), { icon: '🏆', keepOpen: true, right: t.showLeaderboard ? '✓' : '' })}
+          {item('Confetti on +points', () => setTweak('celebrate', !t.celebrate), { icon: '🎉', keepOpen: true, right: t.celebrate ? '✓' : '' })}
           <div className="menu-sep"></div>
           {item('Restore default 4 teams', onRestoreDefaults, { icon: '↩︎' })}
         </div>
@@ -274,40 +274,33 @@ function Menu({ t, setTweak, onAddTeam, onResetAll, onRestoreDefaults }) {
   );
 }
 
+// ── App ───────────────────────────────────────────────────────────────────────
 function App() {
   const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
   const [teams, setTeams] = React.useState(loadTeams);
   const [confirmReset, setConfirmReset] = React.useState(false);
+  const [selectedIdx, setSelectedIdx] = React.useState(null);
 
-  React.useEffect(() => {
-    document.body.classList.toggle('dark', !!t.dark);
-  }, [t.dark]);
-
+  React.useEffect(() => { document.body.classList.toggle('dark', !!t.dark); }, [t.dark]);
   React.useEffect(() => {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(teams)); } catch (e) {}
   }, [teams]);
+  React.useEffect(() => {
+    if (selectedIdx !== null && selectedIdx >= teams.length) setSelectedIdx(null);
+  }, [teams.length]);
 
-  const updateTeam = (idx, next) => {
-    setTeams((prev) => prev.map((x, i) => i === idx ? next : x));
-  };
-  const removeTeam = (idx) => {
-    setTeams((prev) => prev.filter((_, i) => i !== idx));
-  };
+  const updateTeam = (idx, next) => setTeams(prev => prev.map((x, i) => i === idx ? next : x));
+  const removeTeam = (idx) => { setTeams(prev => prev.filter((_, i) => i !== idx)); setSelectedIdx(null); };
   const addTeam = () => {
-    setTeams((prev) => {
-      const usedColors = new Set(prev.map((x) => x.color));
-      const usedEmojis = new Set(prev.map((x) => x.emoji));
-      const color = (COLORS.find((c) => !usedColors.has(c.c1)) || COLORS[prev.length % COLORS.length]).c1;
-      const emoji = EMOJIS.find((e) => !usedEmojis.has(e)) || EMOJIS[prev.length % EMOJIS.length];
-      const n = prev.length + 1;
-      const guess = 'Year ' + (2 + n);
-      return [...prev, { id: uid(), name: guess, color, emoji, score: 0 }];
+    setTeams(prev => {
+      const usedColors = new Set(prev.map(x => x.color));
+      const usedEmojis = new Set(prev.map(x => x.emoji));
+      const color = (COLORS.find(c => !usedColors.has(c.c1)) || COLORS[prev.length % COLORS.length]).c1;
+      const emoji = EMOJIS.find(e => !usedEmojis.has(e)) || EMOJIS[prev.length % EMOJIS.length];
+      return [...prev, { id: uid(), name: 'Year ' + (2 + prev.length + 1), color, emoji, score: 0 }];
     });
   };
-  const resetAll = () => {
-    setTeams((prev) => prev.map((x) => ({ ...x, score: 0 })));
-    setConfirmReset(false);
-  };
+  const resetAll = () => { setTeams(prev => prev.map(x => ({ ...x, score: 0 }))); setConfirmReset(false); };
 
   const max = teams.reduce((m, x) => Math.max(m, x.score), -Infinity);
   const sorted = [...teams].sort((a, b) => b.score - a.score);
@@ -321,23 +314,35 @@ function App() {
           <span className="sub">Kids Church</span>
           Glow Kids
         </div>
-        <Menu t={t} setTweak={setTweak}
-              onAddTeam={addTeam}
-              onResetAll={() => setConfirmReset(true)}
-              onRestoreDefaults={() => setTeams(defaultTeams())} />
+        <Menu t={t} setTweak={setTweak} onAddTeam={addTeam}
+              onResetAll={() => setConfirmReset(true)} onRestoreDefaults={() => setTeams(defaultTeams())} />
       </header>
 
-      <div className="grid-center"><div className="grid">
-        {teams.map((team, i) => (
-          <TeamCard key={team.id}
-                    team={team}
-                    isLeader={teams.length > 1 && team.score === max && max > 0}
-                    isOnlyTeam={teams.length <= 1}
-                    t={t}
-                    onChange={(n) => updateTeam(i, n)}
-                    onRemove={() => removeTeam(i)} />
-        ))}
-      </div></div>
+      <div className="grid-center">
+        <div style={{ display: 'flex', gap: 20, width: '100%', alignItems: 'flex-start' }}>
+          <div className="grid" style={{ flex: 1 }}>
+            {teams.map((team, i) => (
+              <TeamCard key={team.id}
+                        team={team}
+                        isLeader={teams.length > 1 && team.score === max && max > 0}
+                        isOnlyTeam={teams.length <= 1}
+                        isSelected={selectedIdx === i}
+                        t={t}
+                        onChange={next => updateTeam(i, next)}
+                        onEdit={() => setSelectedIdx(selectedIdx === i ? null : i)} />
+            ))}
+          </div>
+
+          {selectedIdx !== null && selectedIdx < teams.length && (
+            <EditPanel
+              team={teams[selectedIdx]}
+              onClose={() => setSelectedIdx(null)}
+              onChange={next => updateTeam(selectedIdx, next)}
+              onRemove={() => removeTeam(selectedIdx)}
+              isOnlyTeam={teams.length <= 1} />
+          )}
+        </div>
+      </div>
 
       {/* leaderboard */}
       {t.showLeaderboard && teams.length > 1 && max > 0 && (
@@ -346,7 +351,7 @@ function App() {
           {sorted.slice(0, 3).map((tm, i) => (
             <React.Fragment key={tm.id}>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                <span className="lb-dot" style={{ '--c1': tm.color, background: tm.color }}></span>
+                <span className="lb-dot" style={{ background: tm.color }}></span>
                 <span className="lb-name">{tm.name}</span>
                 <span style={{ opacity: .7 }}>{tm.score}</span>
               </span>
@@ -358,10 +363,10 @@ function App() {
 
       {confirmReset && (
         <div className="modal-back" onClick={() => setConfirmReset(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <div style={{ fontSize: 56 }}>🎯</div>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <div style={{ fontSize: 48 }}>🎯</div>
             <h2>Reset every team to 0?</h2>
-            <p>This sets every score back to zero. The teams themselves stay.</p>
+            <p>This sets every score back to zero. The teams stay.</p>
             <div className="actions">
               <button className="cancel" onClick={() => setConfirmReset(false)}>Cancel</button>
               <button className="confirm" onClick={resetAll}>Yes, reset all</button>
@@ -372,21 +377,16 @@ function App() {
 
       <TweaksPanel title="Tweaks">
         <TweakSection label="Look">
-          <TweakToggle label="Dark mode" value={t.dark} onChange={(v) => setTweak('dark', v)} />
-          <TweakToggle label="Crown on leader" value={t.showCrown} onChange={(v) => setTweak('showCrown', v)} />
-          <TweakToggle label="Top-3 leaderboard" value={t.showLeaderboard} onChange={(v) => setTweak('showLeaderboard', v)} />
-          <TweakToggle label="Confetti on +points" value={t.celebrate} onChange={(v) => setTweak('celebrate', v)} />
-          <TweakRadio label="Big buttons" value={t.bigButtons}
-                      options={['small','big']}
-                      onChange={(v) => setTweak('bigButtons', v)} />
+          <TweakToggle label="Dark mode" value={t.dark} onChange={v => setTweak('dark', v)} />
+          <TweakToggle label="Crown on leader" value={t.showCrown} onChange={v => setTweak('showCrown', v)} />
+          <TweakToggle label="Top-3 leaderboard" value={t.showLeaderboard} onChange={v => setTweak('showLeaderboard', v)} />
+          <TweakToggle label="Confetti on +points" value={t.celebrate} onChange={v => setTweak('celebrate', v)} />
+          <TweakRadio label="Big buttons" value={t.bigButtons} options={['small','big']} onChange={v => setTweak('bigButtons', v)} />
         </TweakSection>
         <TweakSection label="Scoring">
-          <TweakNumber label="Slider max" value={t.maxScale} min={10} max={500} step={10}
-                       onChange={(v) => setTweak('maxScale', v)} />
-          <TweakNumber label="Main step (±)" value={t.stepBig} min={1} max={50} step={1}
-                       onChange={(v) => setTweak('stepBig', v)} />
-          <TweakNumber label="Fine step (±)" value={t.stepSmall} min={1} max={10} step={1}
-                       onChange={(v) => setTweak('stepSmall', v)} />
+          <TweakNumber label="Slider max" value={t.maxScale} min={10} max={500} step={10} onChange={v => setTweak('maxScale', v)} />
+          <TweakNumber label="Main step (±)" value={t.stepBig} min={1} max={50} step={1} onChange={v => setTweak('stepBig', v)} />
+          <TweakNumber label="Fine step (±)" value={t.stepSmall} min={1} max={10} step={1} onChange={v => setTweak('stepSmall', v)} />
         </TweakSection>
         <TweakSection label="Teams">
           <TweakButton label="+ Add team" onClick={addTeam} />
