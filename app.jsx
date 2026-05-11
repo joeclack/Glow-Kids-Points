@@ -150,12 +150,12 @@ function TeamCard({ team, isLeader, isOnlyTeam, t, onChange, onRemove }) {
 
       {/* emoji picker */}
       {pickEmoji && (
-        <div style={{ position: 'relative', zIndex: 3, marginTop: 8, padding: 8, borderRadius: 14,
-                      background: 'rgba(255,255,255,.85)', boxShadow: '0 6px 18px rgba(0,0,0,.1)',
-                      display: 'grid', gridTemplateColumns: 'repeat(8,1fr)', gap: 4 }}>
+        <div style={{ position: 'absolute', top: 52, left: 14, zIndex: 20, padding: 8, borderRadius: 14,
+                      background: '#fff', boxShadow: '0 6px 18px rgba(0,0,0,.15)',
+                      display: 'grid', gridTemplateColumns: 'repeat(8, 36px)', gap: 2, width: 'max-content' }}>
           {EMOJIS.map((e) => (
             <button key={e} onClick={() => { update({ emoji: e }); setPickEmoji(false); }}
-              style={{ border: 'none', background: 'transparent', fontSize: 24, padding: 4, borderRadius: 8, cursor: 'pointer' }}>
+              style={{ border: 'none', background: 'transparent', fontSize: 22, padding: 4, borderRadius: 8, cursor: 'pointer', width: 36, height: 36 }}>
               {e}
             </button>
           ))}
