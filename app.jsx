@@ -118,7 +118,7 @@ function TeamCard({ team, isLeader, isOnlyTeam, t, onChange, onRemove }) {
       <div className="accent"></div>
 
       {/* header row */}
-      <div className="row" style={{ position: 'relative', zIndex: 2, gap: 10 }}>
+      <div className="row" style={{ position: 'relative', zIndex: 10, gap: 10 }}>
         <button className="btn-tactile" onClick={() => setPickEmoji((v) => !v)}
                 style={{ border: 'none', background: 'transparent', padding: 4, borderRadius: 12, cursor: 'pointer' }}>
           <span className="emoji">{team.emoji}</span>
