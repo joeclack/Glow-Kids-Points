@@ -120,8 +120,10 @@ function TeamCard({ team, isLeader, isOnlyTeam, t, onChange, onRemove }) {
       {/* header row */}
       <div className="row" style={{ position: 'relative', zIndex: 10, gap: 10 }}>
         <button className="btn-tactile" onClick={() => setPickEmoji((v) => !v)}
-                style={{ border: 'none', background: 'transparent', padding: 4, borderRadius: 12, cursor: 'pointer' }}>
-          <span className="emoji">{team.emoji}</span>
+                style={{ border: team.emoji ? 'none' : '1.5px dashed rgba(0,0,0,.2)', background: 'transparent', padding: 4, borderRadius: 12, cursor: 'pointer', width: 46, height: 46, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          {team.emoji
+            ? <span className="emoji">{team.emoji}</span>
+            : <span style={{ fontSize: 12, color: 'rgba(0,0,0,.3)', fontWeight: 700 }}>+</span>}
         </button>
         <div style={{ flex: 1, minWidth: 0 }}>
           {editingName ? (
@@ -153,6 +155,11 @@ function TeamCard({ team, isLeader, isOnlyTeam, t, onChange, onRemove }) {
         <div style={{ position: 'absolute', top: 52, left: 14, zIndex: 20, padding: 8, borderRadius: 14,
                       background: '#fff', boxShadow: '0 6px 18px rgba(0,0,0,.15)',
                       display: 'grid', gridTemplateColumns: 'repeat(8, 36px)', gap: 2, width: 'max-content' }}>
+          <button onClick={() => { update({ emoji: '' }); setPickEmoji(false); }}
+            title="No emoji"
+            style={{ border: '1.5px dashed rgba(0,0,0,.2)', background: 'transparent', fontSize: 14, color: 'rgba(0,0,0,.35)', borderRadius: 8, cursor: 'pointer', width: 36, height: 36 }}>
+            ✕
+          </button>
           {EMOJIS.map((e) => (
             <button key={e} onClick={() => { update({ emoji: e }); setPickEmoji(false); }}
               style={{ border: 'none', background: 'transparent', fontSize: 22, padding: 4, borderRadius: 8, cursor: 'pointer', width: 36, height: 36 }}>
