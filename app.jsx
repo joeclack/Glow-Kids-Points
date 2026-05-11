@@ -113,7 +113,7 @@ function TeamCard({ team, isLeader, isOnlyTeam, t, onChange, onRemove }) {
   const big = t.bigButtons === 'big';
 
   return (
-    <div ref={cardRef} className={'card card-in' + (isLeader && t.showCrown ? ' leader-glow' : '')}
+    <div ref={cardRef} className={'card' + (isLeader && t.showCrown ? ' leader-glow' : '')}
          style={{ '--c1': team.color }} data-screen-label={`Team ${team.name}`}>
       <div className="accent"></div>
 
@@ -135,7 +135,7 @@ function TeamCard({ team, isLeader, isOnlyTeam, t, onChange, onRemove }) {
           )}
         </div>
         {isLeader && t.showCrown && (
-          <div className="crown" title="In the lead!" style={{ fontSize: 30 }}>👑</div>
+          <div title="In the lead!" style={{ fontSize: 24 }}>👑</div>
         )}
         <button className="iconBtn" title="Change color" onClick={() => setPickColor((v) => !v)}>
           <span style={{ display: 'inline-block', width: 16, height: 16, borderRadius: 8, background: team.color, verticalAlign: 'middle', boxShadow: '0 0 0 2px rgba(0,0,0,.1)' }}></span>
@@ -312,13 +312,7 @@ function App() {
       <header className="top-bar">
         <div className="brand">
           <span className="sub">Kids Church</span>
-          <span className="bounce">
-            {'Glow Kids'.split('').map((ch, i) => (
-              <span key={i} style={{ animationDelay: (i * 0.08) + 's', color: ch === ' ' ? 'inherit' : ['#ff5e9d','#ffb000','#22c55e','#00b8d4','#7c3aed','#ff6b3d'][i % 6] }}>
-                {ch === ' ' ? ' ' : ch}
-              </span>
-            ))}
-          </span>
+          Glow Kids
         </div>
         <Menu t={t} setTweak={setTweak}
               onAddTeam={addTeam}
