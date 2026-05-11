@@ -119,7 +119,7 @@ function TeamCard({ team, isLeader, isOnlyTeam, t, onChange, onRemove }) {
 
       {/* header row */}
       <div className="row" style={{ position: 'relative', zIndex: 10, gap: 10 }}>
-        <button className="btn-tactile" onClick={() => setPickEmoji((v) => !v)}
+        <button className="btn-tactile" onClick={() => { setPickEmoji((v) => !v); setPickColor(false); }}
                 style={{ border: team.emoji ? 'none' : '1.5px dashed rgba(0,0,0,.2)', background: 'transparent', padding: 4, borderRadius: 12, cursor: 'pointer', width: 46, height: 46, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           {team.emoji
             ? <span className="emoji">{team.emoji}</span>
@@ -139,7 +139,7 @@ function TeamCard({ team, isLeader, isOnlyTeam, t, onChange, onRemove }) {
         {isLeader && t.showCrown && (
           <div title="In the lead!" style={{ fontSize: 24 }}>👑</div>
         )}
-        <button className="iconBtn" title="Change color" onClick={() => setPickColor((v) => !v)}>
+        <button className="iconBtn" title="Change color" onClick={() => { setPickColor((v) => !v); setPickEmoji(false); }}>
           <span style={{ display: 'inline-block', width: 16, height: 16, borderRadius: 8, background: team.color, verticalAlign: 'middle', boxShadow: '0 0 0 2px rgba(0,0,0,.1)' }}></span>
         </button>
         <div className={'color-pop' + (pickColor ? ' open' : '')}>
