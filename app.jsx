@@ -173,7 +173,7 @@ function TeamCard({ team, isLeader, isOnlyTeam, t, onChange, onRemove }) {
       <div style={{ position: 'relative', zIndex: 2, marginTop: 6, textAlign: 'center' }}>
         {editingScore ? (
           <input autoFocus className="num-input" type="number" value={tempScore}
-                 style={{ fontSize: 'clamp(72px,9vw,120px)', color: team.color, letterSpacing: '-.04em' }}
+                 style={{ fontSize: 'clamp(64px,8vw,108px)', color: team.color, letterSpacing: '-.03em' }}
                  onChange={(e) => setTempScore(e.target.value)}
                  onBlur={() => { setScore(Number(tempScore || 0)); setEditingScore(false); }}
                  onKeyDown={(e) => {
