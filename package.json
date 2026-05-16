@@ -1,0 +1,8 @@
+{
+  "name": "glow-kids-points",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "npx serve . --listen 3000",
+    "start": "npx serve . --listen 3000"
+  }
+}
